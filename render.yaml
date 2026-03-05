@@ -1,0 +1,25 @@
+# Blueprint для деплоя торгового бота на Render (Background Worker)
+# Деплой: Render Dashboard → New → Blueprint → подключить репо
+# Переменные BYBIT_*, TELEGRAM_* — задать вручную (sync: false)
+
+services:
+  - type: worker
+    name: torgovyibot
+    runtime: python
+    repo: https://github.com/TaisyaFreelanse/torgovyibot
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m src.main
+    plan: starter
+    region: frankfurt
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: BYBIT_API_KEY
+        sync: false
+      - key: BYBIT_API_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: BYBIT_TESTNET
+        value: "false"
+      - key: TELEGRAM_CHAT_ID
+        sync: false
