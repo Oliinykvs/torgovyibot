@@ -5,13 +5,25 @@ exchange:
   name: bybit
   testnet: false
 
-# Торговые пары и таймфреймы
+# Торговые пары: symbol, timeframe, max_usdt (лимит маржи в USDT на пару)
+# max_usdt: опционально. Если задано — пара использует не более этой суммы.
+# Без max_usdt — используется reinvestment_pct от общего баланса.
 pairs:
+  - symbol: SOLUSDT
+    timeframe: 1h
+    max_usdt: 20
+    enabled: false
+  - symbol: LDOUSDT
+    timeframe: 1h
+    max_usdt: 25
+    enabled: false
   - symbol: ETHUSDT
     timeframe: 1h
+    max_usdt: 30
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
+    max_usdt: 20
     enabled: false
 
 # Параметры стратегии (Zero Lag MACD + Heiken Ashi)

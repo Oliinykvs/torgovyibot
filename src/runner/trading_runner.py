@@ -61,13 +61,17 @@ class TradingRunner:
             )
         return self._strategy_params
 
-    def _get_pair_config(self) -> list[tuple[str, str]]:
-        """(symbol, timeframe) для активных пар из конфига."""
+    def _get_pair_config(self) -> list[tuple[str, str, float | None]]:
+        """(symbol, timeframe, max_usdt) для активных пар из конфига."""
         config = self.state.load_config()
         pairs = config.get("pairs", [])
         active = self.state.active_pairs
         return [
-            (p["symbol"], p.get("timeframe", "1h"))
+            (
+                p["symbol"],
+                p.get("timeframe", "1h"),
+                p.get("max_usdt"),  # None = использовать reinvestment_pct от баланса
+            )
             for p in pairs
             if p.get("symbol") in active
         ]
@@ -87,8 +91,10 @@ class TradingRunner:
                 break
         return (side, qty, avg_price)
 
-    def _process_pair(self, symbol: str, timeframe: str) -> None:
-        """Один цикл обработки пары."""
+    def _process_pair(
+        self, symbol: str, timeframe: str, max_usdt: float | None = None
+    ) -> None:
+        """Один цикл обработки пары. max_usdt — лимит маржи в USDT для этой пары."""
         try:
             df = self.kline_cache.get_klines(symbol, timeframe, limit=100)
             if len(df) < 50:
@@ -107,11 +113,11 @@ class TradingRunner:
                 return
             curr_price = float(df["close"].iloc[-1])
             if sig == SignalType.LONG_ENTRY and position == "none":
-                resp = self.order_manager.open_long(symbol)
+                resp = self.order_manager.open_long(symbol, max_usdt=max_usdt)
                 if resp.get("retCode") == 0 and self.notifier:
                     self.notifier.sync_send_text(f"📈 Long {symbol} @ {curr_price}")
             elif sig == SignalType.SHORT_ENTRY and position == "none":
-                resp = self.order_manager.open_short(symbol)
+                resp = self.order_manager.open_short(symbol, max_usdt=max_usdt)
                 if resp.get("retCode") == 0 and self.notifier:
                     self.notifier.sync_send_text(f"📉 Short {symbol} @ {curr_price}")
             elif sig == SignalType.LONG_CLOSE and position == "Buy":
@@ -140,10 +146,10 @@ class TradingRunner:
         while not self.stop_event.is_set():
             try:
                 pairs = self._get_pair_config()
-                for symbol, timeframe in pairs:
+                for symbol, timeframe, max_usdt in pairs:
                     if self.stop_event.is_set():
                         break
-                    self._process_pair(symbol, timeframe)
+                    self._process_pair(symbol, timeframe, max_usdt)
                     time.sleep(2)  # Throttle между парами
             except Exception as e:
                 logger.exception("Runner loop error: %s", e)

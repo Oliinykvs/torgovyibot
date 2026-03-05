@@ -64,8 +64,10 @@ class OrderManager:
                 return (p.get("side", "Buy"), size)
         return None
 
-    def calc_qty(self, symbol: str) -> float:
-        """Рассчитывает qty для новой позиции."""
+    def calc_qty(self, symbol: str, max_usdt: float | None = None) -> float:
+        """Рассчитывает qty для новой позиции.
+        max_usdt: лимит маржи в USDT для этой пары (из config pairs.max_usdt).
+        """
         balance = self.get_balance()
         price = self.trading.get_last_price(symbol)
         raw_qty = calc_position_qty(
@@ -73,6 +75,7 @@ class OrderManager:
             price=price,
             reinvestment_pct=self.params.reinvestment_pct,
             leverage=self.params.leverage,
+            max_usdt=max_usdt,
         )
         return round_qty(raw_qty)
 
@@ -87,10 +90,13 @@ class OrderManager:
         self,
         symbol: str,
         qty: Optional[float] = None,
+        max_usdt: Optional[float] = None,
     ) -> dict:
-        """Открытие лонг позиции."""
+        """Открытие лонг позиции.
+        max_usdt: лимит маржи в USDT для этой пары (из config).
+        """
         self.set_leverage(symbol, self.params.leverage)
-        qty = qty or self.calc_qty(symbol)
+        qty = qty or self.calc_qty(symbol, max_usdt=max_usdt)
         if qty <= 0:
             return {"retCode": 1, "retMsg": "Insufficient balance or invalid qty"}
         price = self.trading.get_last_price(symbol)
@@ -108,10 +114,13 @@ class OrderManager:
         self,
         symbol: str,
         qty: Optional[float] = None,
+        max_usdt: Optional[float] = None,
     ) -> dict:
-        """Открытие шорт позиции."""
+        """Открытие шорт позиции.
+        max_usdt: лимит маржи в USDT для этой пары (из config).
+        """
         self.set_leverage(symbol, self.params.leverage)
-        qty = qty or self.calc_qty(symbol)
+        qty = qty or self.calc_qty(symbol, max_usdt=max_usdt)
         if qty <= 0:
             return {"retCode": 1, "retMsg": "Insufficient balance or invalid qty"}
         price = self.trading.get_last_price(symbol)

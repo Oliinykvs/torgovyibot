@@ -64,8 +64,10 @@ async def cmd_pairs(
     for p in pairs:
         sym = p.get("symbol", "?")
         tf = p.get("timeframe", "?")
+        max_u = p.get("max_usdt")
+        alloc = f" ${max_u}" if max_u is not None else ""
         status = "✅" if state.is_pair_active(sym) else "⏸"
-        lines.append(f"{status} {sym} ({tf})")
+        lines.append(f"{status} {sym} ({tf}){alloc}")
     text = "<b>Пари:</b>\n" + ("\n".join(lines) if lines else "Немає пар у конфігу")
     text += "\n\n👇 Натисніть кнопку:"
     msg = update.message or (update.callback_query and update.callback_query.message)
