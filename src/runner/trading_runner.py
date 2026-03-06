@@ -45,6 +45,7 @@ class TradingRunner:
         self.stop_event = stop_event or threading.Event()
         self._strategy_params: Optional[StrategyParams] = None
         self._thread: Optional[threading.Thread] = None
+        self._trail_stop: dict[str, float] = {}  # symbol -> trail level (зберігаємо між циклами)
 
     def _load_params(self) -> StrategyParams:
         if self._strategy_params is None:
@@ -102,7 +103,9 @@ class TradingRunner:
             params = self._load_params()
             position, qty, entry_price = self._get_position_info(symbol)
             pos_str = "none" if position == "none" else ("long" if position == "Buy" else "short")
-            trail_stop = None  # TODO: persist trail_stop per pair
+            if position == "none":
+                self._trail_stop.pop(symbol, None)
+            trail_stop = self._trail_stop.get(symbol)
             sig, new_entry, new_trail = generate_signals(
                 df, params,
                 position=pos_str,
@@ -110,6 +113,8 @@ class TradingRunner:
                 trail_stop=trail_stop,
             )
             if sig == SignalType.NONE:
+                if new_trail is not None and position != "none":
+                    self._trail_stop[symbol] = new_trail
                 return
             curr_price = float(df["close"].iloc[-1])
             if sig == SignalType.LONG_ENTRY and position == "none":
@@ -121,6 +126,7 @@ class TradingRunner:
                 if resp.get("retCode") == 0 and self.notifier:
                     self.notifier.sync_send_text(f"📉 Short {symbol} @ {curr_price}")
             elif sig == SignalType.LONG_CLOSE and position == "Buy":
+                self._trail_stop.pop(symbol, None)
                 resp = self.order_manager.close_position_by_signal(symbol, "Long", qty)
                 if resp.get("retCode") == 0:
                     if entry_price is not None and max_usdt is not None:
@@ -131,6 +137,7 @@ class TradingRunner:
                     if self.notifier:
                         self.notifier.sync_send_text(f"📉 Close Long {symbol} @ {curr_price}")
             elif sig == SignalType.SHORT_CLOSE and position == "Sell":
+                self._trail_stop.pop(symbol, None)
                 resp = self.order_manager.close_position_by_signal(symbol, "Short", qty)
                 if resp.get("retCode") == 0:
                     if entry_price is not None and max_usdt is not None:
@@ -141,6 +148,7 @@ class TradingRunner:
                     if self.notifier:
                         self.notifier.sync_send_text(f"📈 Close Short {symbol} @ {curr_price}")
             elif sig in (SignalType.TRAILING_STOP_LONG, SignalType.TRAILING_STOP_SHORT):
+                self._trail_stop.pop(symbol, None)
                 side = "Long" if sig == SignalType.TRAILING_STOP_LONG else "Short"
                 resp = self.order_manager.close_position_trailing(symbol, side, qty, curr_price)
                 if resp.get("retCode") == 0 and entry_price is not None and max_usdt is not None:
