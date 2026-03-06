@@ -150,3 +150,45 @@ class BybitTrading:
         """Последняя цена."""
         t = self.get_ticker(symbol)
         return float(t.get("lastPrice", 0))
+
+    _lot_size_cache: dict[str, tuple[float, float]] = {}
+
+    def get_lot_size(self, symbol: str, category: str = "linear") -> tuple[float, float]:
+        """
+        Мінімальна кількість та крок для ордера (minOrderQty, qtyStep).
+        Кешується для зменшення запитів до API.
+        """
+        cache_key = f"{category}:{symbol.upper()}"
+        if cache_key in self._lot_size_cache:
+            return self._lot_size_cache[cache_key]
+        resp = self.session.get_instruments_info(
+            category=category,
+            symbol=symbol.upper(),
+        )
+        if resp.get("retCode") != 0:
+            # Fallback для популярних пар
+            fallback = self._fallback_lot_size(symbol)
+            self._lot_size_cache[cache_key] = fallback
+            return fallback
+        items = resp.get("result", {}).get("list", [])
+        if not items:
+            fallback = self._fallback_lot_size(symbol)
+            self._lot_size_cache[cache_key] = fallback
+            return fallback
+        lot = items[0].get("lotSizeFilter", {})
+        min_qty = float(lot.get("minOrderQty", 0.01))
+        qty_step = float(lot.get("qtyStep", 0.01))
+        result = (min_qty, qty_step)
+        self._lot_size_cache[cache_key] = result
+        return result
+
+    def _fallback_lot_size(self, symbol: str) -> tuple[float, float]:
+        """Резервні значення для популярних пар Bybit linear."""
+        s = symbol.upper()
+        if s == "BTCUSDT":
+            return (0.001, 0.001)
+        if s == "ETHUSDT":
+            return (0.01, 0.01)
+        if s in ("SOLUSDT", "XRPUSDT", "DOGEUSDT", "AVAXUSDT"):
+            return (0.1, 0.1)
+        return (0.01, 0.01)

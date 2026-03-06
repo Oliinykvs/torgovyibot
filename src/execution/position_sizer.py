@@ -39,12 +39,21 @@ def calc_position_qty(
     return position_value / price
 
 
-def round_qty(qty: float, min_qty: float = 1e-8, qty_step: float = 1e-5) -> float:
+def round_qty(
+    qty: float,
+    min_qty: float = 1e-8,
+    qty_step: float = 1e-5,
+) -> float:
     """
-    Округляет qty до допустимого шага (lot size).
-    По умолчанию — консервативное округление вниз.
+    Округляет qty до допустимого шага (lot size) Bybit.
+    Округление вниз до ближайшего кратного qty_step.
     """
     if qty < min_qty:
         return 0.0
+    if qty_step <= 0:
+        qty_step = 1e-5
     steps = int(qty / qty_step)
-    return steps * qty_step
+    result = steps * qty_step
+    if result < min_qty:
+        result = min_qty
+    return result

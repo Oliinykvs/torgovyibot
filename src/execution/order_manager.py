@@ -93,7 +93,8 @@ class OrderManager:
             max_usdt=max_usdt if (allocated is None or allocated <= 0) else None,
             allocated_capital=allocated if (allocated and allocated > 0) else None,
         )
-        return round_qty(raw_qty)
+        min_qty, qty_step = self.trading.get_lot_size(symbol)
+        return round_qty(raw_qty, min_qty=min_qty, qty_step=qty_step)
 
     def _limit_price(self, symbol: str, side: str, reference_price: float) -> str:
         """Цена для лимитного ордера (с небольшим offset)."""
