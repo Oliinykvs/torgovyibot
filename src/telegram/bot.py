@@ -168,7 +168,7 @@ def run_bot(
         params = ExecutionParams(
             reinvestment_pct=exec_cfg.get("reinvestment_pct", 100),
             leverage=exec_cfg.get("leverage", 1),
-            use_limit_orders=exec_cfg.get("use_limit_orders", True),
+            use_limit_orders=exec_cfg.get("use_limit_orders", False),
             convert_to_usdt=exec_cfg.get("convert_to_usdt", True),
         )
         order_manager = OrderManager(client, params)

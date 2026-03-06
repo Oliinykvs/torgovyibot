@@ -40,7 +40,7 @@ strategy:
 execution:
   reinvestment_pct: 50   # % прибутку для реінвестування (1-100). Тільки для пар з max_usdt
   leverage: 1            # Плечо (1-100)
-  use_limit_orders: true # Лимитные ордера вместо рыночных
+  use_limit_orders: false # Ринкові ордери (рекомендовано для крипти з урахуванням затримок)
   convert_to_usdt: true  # Конвертировать в USDT после закрытия сделки
 
 # Комиссия (для расчётов)
