@@ -7,6 +7,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Optional
 
+from pybit.exceptions import InvalidRequestError
+
 from src.exchange.bybit_client import BybitClient
 from src.exchange.trading import BybitTrading
 from src.execution.pair_capital import PairCapitalStore
@@ -44,8 +46,15 @@ class OrderManager:
         self.pair_capital = pair_capital or PairCapitalStore()
 
     def set_leverage(self, symbol: str, leverage: int) -> dict:
-        """Установка плеча перед открытием позиции."""
-        return self.trading.set_leverage(symbol=symbol, leverage=leverage)
+        """Установка плеча перед открытием позиции.
+        ErrCode 110043 (leverage not modified) — плечо вже встановлено, ігноруємо.
+        """
+        try:
+            return self.trading.set_leverage(symbol=symbol, leverage=leverage)
+        except InvalidRequestError as e:
+            if "110043" in str(e) or "leverage not modified" in str(e).lower():
+                return {"retCode": 0, "retMsg": "Leverage already set"}
+            raise
 
     def get_balance(self) -> float:
         """Доступный эквити в USDT."""
