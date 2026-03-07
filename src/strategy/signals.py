@@ -70,10 +70,13 @@ def generate_signals(
     position: str = "none",  # "long" | "short" | "none"
     entry_price: Optional[float] = None,
     trail_stop: Optional[float] = None,
-    allow_same_candle: bool = True,
 ) -> tuple[SignalType, Optional[float], Optional[float]]:
     """
     Генерує сигнал для останнього бару.
+
+    Вхід/вихід тільки по ЗАКРИТІЙ свічці: умови перевіряються на prev (остання
+    закрита), дія виконується на curr (наступна свічка). Це запобігає передчасним
+    входам на свічці, що ще формується.
 
     Args:
         df: DataFrame з OHLCV (мінімум 2 бари для MACD warmup)
@@ -81,7 +84,6 @@ def generate_signals(
         position: Поточна позиція
         entry_price: Ціна входу (для trailing stop)
         trail_stop: Поточне значення trail stop
-        allow_same_candle: Дозволити вхід на тій же свічці після закриття (примітка не для ШІ)
 
     Returns:
         (SignalType, new_entry_price, new_trail_stop)
@@ -135,24 +137,19 @@ def generate_signals(
                 return SignalType.TRAILING_STOP_SHORT, None, None
 
     # --- Signal Close ---
-    if position == "long" and macd_below and is_red:
+    # Тільки по ЗАКРИТІЙ свічці (prev): MACD + колір HA
+    if position == "long" and prev_macd_below and prev_red:
         return SignalType.LONG_CLOSE, None, None
-    if position == "short" and macd_above and is_green:
+    if position == "short" and prev_macd_above and prev_green:
         return SignalType.SHORT_CLOSE, None, None
 
     # --- Entry ---
-    # Вхід на наступній свічці: prev має умови, curr — бар входу.
-    # allow_same_candle: після закриття на цій свічці — перевіряти curr для входу.
+    # Вхід ТІЛЬКИ на наступній свічці після закриття: prev (остання закрита) має обидві умови.
+    # curr може бути свічкою, що формується — не використовуємо її для умов.
     if position == "none":
-        # Long: MACD > Signal + зелена HA (на prev, або curr якщо тільки закрили)
-        long_cond_prev = prev_macd_above and prev_green
-        long_cond_curr = macd_above and is_green
-        if (long_cond_prev and long_cond_curr) or (allow_same_candle and long_cond_curr):
+        if prev_macd_above and prev_green:
             return SignalType.LONG_ENTRY, curr_close, None
-        # Short: MACD < Signal + червона HA
-        short_cond_prev = prev_macd_below and prev_red
-        short_cond_curr = macd_below and is_red
-        if (short_cond_prev and short_cond_curr) or (allow_same_candle and short_cond_curr):
+        if prev_macd_below and prev_red:
             return SignalType.SHORT_ENTRY, curr_close, None
 
     return SignalType.NONE, entry_price, new_trail
