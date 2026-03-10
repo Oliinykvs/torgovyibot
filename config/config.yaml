@@ -23,7 +23,7 @@ pairs:
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
-    max_usdt: 0
+    max_usdt: 10
     enabled: false
 
 # Параметры стратегии (Zero Lag MACD + Heiken Ashi)
