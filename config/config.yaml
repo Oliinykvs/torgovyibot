@@ -11,19 +11,19 @@ exchange:
 pairs:
   - symbol: SOLUSDT
     timeframe: 1h
-    max_usdt: 20
+    max_usdt: 30
     enabled: false
   - symbol: LDOUSDT
     timeframe: 1h
-    max_usdt: 25
+    max_usdt: 40
     enabled: false
   - symbol: ETHUSDT
     timeframe: 1h
-    max_usdt: 40
+    max_usdt: 100
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
-    max_usdt: 20
+    max_usdt: 0
     enabled: false
 
 # Параметры стратегии (Zero Lag MACD + Heiken Ashi)
@@ -34,11 +34,11 @@ strategy:
   use_ema: true
   use_glaz_algo: false
   trailing_activation_pct: 0.0
-  trailing_stop_pct: 2.0
+  trailing_stop_pct: 5.0
 
 # Параметры исполнения
 execution:
-  reinvestment_pct: 95   # % прибутку для реінвестування (1-100). Тільки для пар з max_usdt
+  reinvestment_pct: 98   # % прибутку для реінвестування (1-100). Тільки для пар з max_usdt
   leverage: 1            # Плечо (1-100)
   use_limit_orders: false # Ринкові ордери (рекомендовано для крипти з урахуванням затримок)
   convert_to_usdt: true  # Конвертировать в USDT после закрытия сделки
