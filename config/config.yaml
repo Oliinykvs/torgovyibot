@@ -13,17 +13,17 @@ pairs:
     timeframe: 1h
     max_usdt: 100
     enabled: false
-  - symbol: AAVEUSDT
+  - symbol: TAOUSDT
     timeframe: 1h
     max_usdt: 40
     enabled: false
   - symbol: ETHUSDT
     timeframe: 1h
-    max_usdt: 30
+    max_usdt: 25
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
-    max_usdt: 0
+    max_usdt: 5
     enabled: false
 
 # Параметры стратегии (Zero Lag MACD + Heiken Ashi)
@@ -33,8 +33,8 @@ strategy:
   signal_mm_period: 9
   use_ema: true
   use_glaz_algo: false
-  trailing_activation_pct: 0.0
-  trailing_stop_pct: 5.0
+  trailing_activation_pct: 1.5
+  trailing_stop_pct: 1.0
 
 # Параметры исполнения
 execution:
