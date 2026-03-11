@@ -11,15 +11,15 @@ exchange:
 pairs:
   - symbol: SOLUSDT
     timeframe: 1h
-    max_usdt: 30
+    max_usdt: 100
     enabled: false
-  - symbol: LDOUSDT
+  - symbol: AAVEUSDT
     timeframe: 1h
     max_usdt: 40
     enabled: false
   - symbol: ETHUSDT
     timeframe: 1h
-    max_usdt: 100
+    max_usdt: 30
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
