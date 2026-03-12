@@ -11,7 +11,7 @@ exchange:
 pairs:
   - symbol: SOLUSDT
     timeframe: 1h
-    max_usdt: 155
+    max_usdt: 100
     enabled: false
   - symbol: TAOUSDT
     timeframe: 1h
@@ -33,7 +33,7 @@ strategy:
   signal_mm_period: 9
   use_ema: true
   use_glaz_algo: false
-  trailing_activation_pct: 1.4
+  trailing_activation_pct: 1.5
   trailing_stop_pct: 1.0
 
 # Параметры исполнения
