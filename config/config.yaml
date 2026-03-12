@@ -14,7 +14,7 @@ pairs:
     max_usdt: 100
     enabled: false
   - symbol: OPUSDT
-    timeframe: 1h
+    timeframe: 4h
     max_usdt: 10
     enabled: false
   - symbol: ETHUSDT
