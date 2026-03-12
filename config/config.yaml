@@ -11,19 +11,19 @@ exchange:
 pairs:
   - symbol: SOLUSDT
     timeframe: 1h
-    max_usdt: 45
+    max_usdt: 155
     enabled: false
   - symbol: TAOUSDT
     timeframe: 1h
-    max_usdt: 40
+    max_usdt: 5
     enabled: false
   - symbol: ETHUSDT
     timeframe: 1h
-    max_usdt: 45
+    max_usdt: 5
     enabled: false
   - symbol: BTCUSDT
     timeframe: 1h
-    max_usdt: 10
+    max_usdt: 5
     enabled: false
 
 # Параметры стратегии (Zero Lag MACD + Heiken Ashi)
